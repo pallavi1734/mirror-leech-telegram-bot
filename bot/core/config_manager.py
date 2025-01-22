@@ -13,7 +13,7 @@ class Config:
     DOWNLOAD_DIR = "/usr/src/app/downloads/"
     EQUAL_SPLITS = False
     EXTENSION_FILTER = ""
-    FFMPEG_CMDS = []
+    FFMPEG_CMDS = {}
     FILELION_API = ""
     GDRIVE_ID = ""
     INCOMPLETE_TASK_NOTIFIER = False
@@ -39,6 +39,7 @@ class Config:
     RCLONE_SERVE_PORT = 8080
     RSS_CHAT = ""
     RSS_DELAY = 600
+    RSS_SIZE_LIMIT = 0
     SEARCH_API_LINK = ""
     SEARCH_LIMIT = 0
     SEARCH_PLUGINS = []
@@ -95,6 +96,14 @@ class Config:
                     value = "rc"
                 elif attr == "DOWNLOAD_DIR" and not value.endswith("/"):
                     value = f"{value}/"
+                elif attr in [
+                    "BASE_URL",
+                    "RCLONE_SERVE_URL",
+                    "INDEX_URL",
+                    "SEARCH_API_LINK",
+                ]:
+                    if value:
+                        value = value.strip("/")
                 elif attr == "USENET_SERVERS":
                     try:
                         if not value[0].get("host"):
@@ -118,6 +127,14 @@ class Config:
                 elif key == "DOWNLOAD_DIR":
                     if not value.endswith("/"):
                         value = f"{value}/"
+                elif key in [
+                    "BASE_URL",
+                    "RCLONE_SERVE_URL",
+                    "INDEX_URL",
+                    "SEARCH_API_LINK",
+                ]:
+                    if value:
+                        value = value.strip("/")
                 elif key == "USENET_SERVERS":
                     try:
                         if not value[0].get("host"):

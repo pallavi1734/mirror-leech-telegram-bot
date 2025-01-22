@@ -151,12 +151,8 @@ programming in Python.
   <summary><h5>Archives</h5></summary>
 
 - Extract splits with or without password
-- Zip file/folder with or without password
-- Decompress zst files
-- Using 7-zip tool to extract with or without password all supported types:
-
-> ZIP, RAR, TAR, 7z, ISO, WIM, CAB, GZIP, BZIP2, APM, ARJ, CHM, CPIO, CramFS, DEB, DMG, FAT, HFS, LZH, LZMA, LZMA2,MBR,
-> MSI, MSLZ, NSIS, NTFS, RPM, SquashFS, UDF, VHD, XAR, Z, TAR.XZ, CBZ
+- Zip file/folder with or without password and splits incase of leech
+- Using 7z package to extract with or without password all supported types
 
 </details>
 
@@ -200,6 +196,7 @@ programming in Python.
 - Ability to save upload paths
 - Name Substitution to rename the files before upload
 - User can select whether he want to use his rclone.conf/token.pickle without adding mpt: or mrcc: before path/gd-id
+- FFmpeg commands to execute it after download (task option)
 - Supported Direct links Generators:
 
 > mediafire (file/folders), hxfile.co (need cookies txt with name) [hxfile.txt], streamtape.com, streamsb.net, streamhub.ink,
@@ -304,11 +301,12 @@ Fill up rest of the fields. Meaning of each field is discussed below.
 - `USE_SERVICE_ACCOUNTS`: Whether to use Service Accounts or not, with google-api-python-client. For this to work
   see [Using Service Accounts](https://github.com/anasty17/mirror-leech-telegram-bot#generate-service-accounts-what-is-service-account)
   section below. Default is `False`. `Bool`
-- `FFMPEG_CMDS`: list of ffmpeg commands. You can set multiple ffmpeg commands for all files before upload. Don't write ffmpeg at beginning, start directly with the arguments. `List`
-  - Examples: ["-i mltb.mkv -c copy -c:s srt mltb.mkv", "-i mltb.video -c copy -c:s srt mltb", "-i mltb.m4a -c:a libmp3lame -q:a 2 mltb.mp3", "-i mltb.audio -c:a libmp3lame -q:a 2 mltb.mp3"]
+- `FFMPEG_CMDS`: Dict of list values of ffmpeg commands. You can set multiple ffmpeg commands for all files before upload. Don't write ffmpeg at beginning, start directly with the arguments. `Dict`
+  - Examples: {"subtitle": ["-i mltb.mkv -c copy -c:s srt mltb.mkv", "-i mltb.video -c copy -c:s srt mltb"], "convert": ["-i mltb.m4a -c:a libmp3lame -q:a 2 mltb.mp3", "-i mltb.audio -c:a libmp3lame -q:a 2 mltb.mp3"], extract: ["-i mltb -map 0:a -c copy mltb.mka -map 0:s -c copy mltb.srt"]}
   **Notes**:
+  - Don't add ffmpeg at the beginning!
   - Add `-del` to the list which you want from the bot to delete the original files after command run complete!
-  - Seed will get disbaled while using this option
+  - To execute one of those lists in bot for example, you must use -ff subtitle (list key) or -ff convert (list key)
   **Example**:
   - Here I will explain how to use mltb.* which is reference to files you want to work on.
   1. First cmd: the input is mltb.mkv so this cmd will work only on mkv videos and the output is mltb.mkv also so all outputs is mkv. `-del` will delete the original media after complete run of the cmd.
@@ -317,8 +315,7 @@ Fill up rest of the fields. Meaning of each field is discussed below.
   4. Fourth cmd: the input is mltb.audio so this cmd will work on all audios and the output is mltb.mp3 so the output extension is mp3.
 - `NAME_SUBSTITUTE`: Add word/letter/character/sentense/pattern to remove or replace with other words with sensitive case or without. `Str` 
   **Notes**:
-    1. Seed will get disbaled while using this option
-    2. Before any character you must add `\BACKSLASH`, those are the characters: `\^$.|?*+()[]{}-`
+    - Before any character you must add `\BACKSLASH`, those are the characters: `\^$.|?*+()[]{}-`
     * Example: script/code/s | mirror/leech | tea/ /s | clone | cpu/ | \[mltb\]/mltb | \\text\\/text/s
     - script will get replaced by code with sensitive case
     - mirror will get replaced by leech
@@ -370,7 +367,7 @@ Fill up rest of the fields. Meaning of each field is discussed below.
 - `USER_TRANSMISSION`: Upload/Download by user session. Only in superChat. Default is `False`. `Bool`
 - `MIXED_LEECH`: Upload by user and bot session with respect to file size. Only in superChat. Default is `False`. `Bool`
 - `LEECH_FILENAME_PREFIX`: Add custom word to leeched file name. `Str`
-- `LEECH_DUMP_CHAT`: ID or USERNAME or PM(private message) to where files would be uploaded. `Int`|`Str`. Add `-100` before channel/superGroup id.
+- `LEECH_DUMP_CHAT`: ID or USERNAME or PM(private message) to where files would be uploaded. Add `-100` before channel/superGroup id. To use only specific topic write it in this format `chat_id|thread_id`. Ex:-100XXXXXXXXXXX or -100XXXXXXXXXXX|10 or pm or @xxxxxxx or @xxxxxxx|10. `Int`|`Str`
 - `THUMBNAIL_LAYOUT`: Thumbnail layout (widthxheight, 2x2, 3x3, 2x4, 4x4, ...) of how many photo arranged for the thumbnail.`Str`
 
 **7. qBittorrent/Aria2c/Sabnzbd**
@@ -407,6 +404,7 @@ Fill up rest of the fields. Meaning of each field is discussed below.
 
 - `RSS_DELAY`: Time in seconds for rss refresh interval. Recommended `600` second at least. Default is `600` in
   sec. `Int`
+- `RSS_SIZE_LIMIT`: Item size limit in bytes. Default is `0`. `INT`
 - `RSS_CHAT`: Chat `ID or USERNAME or ID|TOPIC_ID or USERNAME|TOPIC_ID` where rss links will be sent. If you want message to be sent to the channel then add channel id. Add `-100` before channel id. `Int`|`Str`
     - **RSS NOTES**: `RSS_CHAT` is required, otherwise monitor will not work. You must use `USER_STRING_SESSION` --OR--
       *CHANNEL*. If using channel then bot should be added in both channel and group(linked to channel) and `RSS_CHAT`
@@ -455,12 +453,6 @@ Make sure you still mount the repo folder and installed the docker from official
 <details>
   <summary><h3>Build And Run The Docker Image Using Official Docker Commands</h3></summary>
 
-- Start Docker daemon (SKIP if already running, mostly you don't need to do this):
-
-```
-sudo dockerd
-```
-
 - Build Docker image:
 
 ```
@@ -470,7 +462,7 @@ sudo docker build . -t mltb
 - Run the image:
 
 ```
-sudo docker run -p 80:80 -p 8080:8080 mltb
+sudo docker run --network host mltb
 ```
 
 - To stop the running image:
@@ -489,10 +481,6 @@ sudo docker stop id
 
 <details>
   <summary><h3>Build And Run The Docker Image Using docker-compose</h3></summary>
-
-**NOTE**: If you want to use ports other than 80 and 8080 for torrent file selection and rclone serve respectively,
-change it in [docker-compose.yml](https://github.com/anasty17/mirror-leech-telegram-bot/blob/master/docker-compose.yml)
-also.
 
 - Install docker compose plugin
 
@@ -532,6 +520,8 @@ sudo docker compose logs --follow
 
 ------
 
+</details>
+
 **IMPORTANT NOTES**:
 
 1. Set `BASE_URL_PORT` and `RCLONE_SERVE_PORT` variables to any port you want to use. Default is `80` and `8080`
@@ -542,7 +532,6 @@ sudo docker compose logs --follow
 
 ------
 
-</details>
 </details>
 </details>
 
@@ -889,7 +878,7 @@ Where host is the name of extractor (eg. instagram, Twitch). Multiple accounts o
 separated by a new line.
 
 **Yt-dlp**: 
-Authentication using [cookies.txt](https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp) file.
+Authentication using [cookies.txt](https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies) file.
 
 
 -----
